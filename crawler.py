@@ -22,8 +22,21 @@ class photos:
         self.start = start
         self.end = end
         self.last_number = last_number
+        
+        options = uc.ChromeOptions()
+        # 手动指定 Chrome 路径
+        options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"  # 根据实际情况调整路径
+        
+        # 设置下载路径
+        prefs = {
+            "download.default_directory": r"D:\VsCodeProject\2Dimages", # 更改为你希望的路径
+            "download.prompt_for_download": False,
+            "download.directory_upgrade": True,
+            "safebrowsing.enabled": True
+        }
+        options.add_experimental_option("prefs", prefs)
 
-        self.driver = uc.Chrome()  #driver_executable_path=r".\chromedriver.exe"
+        self.driver = uc.Chrome(options=options)  #driver_executable_path=r".\chromedriver.exe"
         self.wait = WebDriverWait(self.driver, 60, 0.2)
         self.driver.implicitly_wait(10)
         if login_flag == 1:
@@ -42,24 +55,43 @@ class photos:
         print(f"________________________{count}________________________")
         time.sleep(random.uniform(1, 2))
 
-    def all(self,last_number):
-        for i in range(last_number,self.number+1):
-            time.sleep(random.uniform(1,1.5))
-            target = self.driver.find_element(By.XPATH,f"//*[@id=\"svelte\"]//span[{i}]/a/picture/img[@class=\"svelte-1ibbyvk\"]")
-            time.sleep(random.uniform(1,1.6))
-            empty = target.location_once_scrolled_into_view
-            time.sleep(random.uniform(1, 1.6))
-            target.click()
-            time.sleep(random.uniform(1,1.8))
-            self.wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"svelte\"]/div/div[1]/div[1]//span[2]/a[@rel=\"external nofollow\"]")))
-            target = self.driver.find_element(By.XPATH,"//*[@id=\"svelte\"]/div/div[1]/div[1]//span[2]/a[@rel=\"external nofollow\"]")
-            empty = target.location_once_scrolled_into_view
-            time.sleep(random.uniform(1,1.6))
-            target.click()
-            time.sleep(random.uniform(1, 1.9))
-            self.driver.back()
-            print(i,end=" ")
-        print("")
+    def all(self, last_number):
+        # 等待图片区域加载
+        self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#svelte picture img")))
+        
+        # 获取所有缩略图的 <a> 链接
+        links = self.driver.find_elements(By.XPATH, '//*[@id="svelte"]//a[.//picture/img]')
+        
+        # 从 last_number 开始（用户输入的是“上次张数”，即已下载到第几张）
+        for i in range(last_number - 1, min(len(links), self.number)):
+            try:
+                link = links[i]
+                # 滚动到元素位置（确保不在屏幕外）
+                self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", link)
+                time.sleep(random.uniform(0.5, 1))
+                
+                # 使用 JS 点击缩略图链接
+                self.driver.execute_script("arguments[0].click();", link)
+
+                # 等待并点击原图下载链接
+                original_link = self.wait.until(
+                    EC.element_to_be_clickable((By.XPATH, '//a[@rel="external nofollow"]'))
+                )
+                # 使用 JS 点击原图下载链接
+                self.driver.execute_script("arguments[0].click();", original_link)
+
+                self.driver.back()
+                time.sleep(random.uniform(1, 2))
+
+                # 重要：重新获取 links，避免 StaleElementReferenceException
+                links = self.driver.find_elements(By.XPATH, '//*[@id="svelte"]//a[.//picture/img]')
+                print(i + 1, end=" ")
+            except Exception as e:
+                print(f"\nError on {i+1}: {str(e)[:50]}")
+                self.driver.back()
+                time.sleep(1)
+                links = self.driver.find_elements(By.XPATH, '//*[@id="svelte"]//a[.//picture/img]')
+        print()
 
     def run(self):
 
