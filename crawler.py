@@ -14,7 +14,6 @@ import set_maxpage
 
 url = "https://anime-pictures.net/posts?page={}&search_tag=girl&order_by=rating&ldate=4&lang=zh-cn"
 
-
 class photos:
     def __init__(self,url,number,last_number,lodin_flag=0,start=0,end=1):#初始化
         self.number = number
@@ -25,11 +24,11 @@ class photos:
         
         options = uc.ChromeOptions()
         # 手动指定 Chrome 路径
-        options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"  # 根据实际情况调整路径
+        options.binary_location = r"C:\Users\Administrator\AppData\Local\Google\Chrome\Application\chrome.exe"  # 根据实际情况调整路径
         
         # 设置下载路径
         prefs = {
-            "download.default_directory": r"D:\VsCodeProject\2Dimages", # 更改为你希望的路径
+            "download.default_directory": r"D:\VsCodeProjects\Dataset\2Dimages", # 更改为你希望的路径
             "download.prompt_for_download": False,
             "download.directory_upgrade": True,
             "safebrowsing.enabled": True
@@ -53,6 +52,12 @@ class photos:
         self.driver.get(self.url.format(count))
         # 等待页面加载
         print(f"________________________{count}________________________")
+        time.sleep(random.uniform(1, 2))
+    
+    def get_page(self):
+        #加载页面
+        self.driver.get("https://api.anime-pictures.net/pictures/download_image/885356-2280x3980-blue+archive-yuuka+(blue+archive)-dasiu-single-long+hair-tall+image.jpg")
+        # 等待页面加载
         time.sleep(random.uniform(1, 2))
 
     def all(self, last_number):
@@ -97,6 +102,9 @@ class photos:
 
         for count in range(self.start,self.end):
             self.page(count)
+            self.get_page()
+            time.sleep(10)
+            exit(0)
             self.all(self.last_number)
             self.last_number = 1
         time.sleep(10)
