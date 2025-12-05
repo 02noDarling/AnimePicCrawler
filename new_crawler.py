@@ -122,4 +122,4 @@ def run_scraper_and_save(start_page: int, end_page: int, base_url_template: str)
 BASE_URL_TEMPLATE = "https://anime-pictures.net/posts?page={page}&search_tag=girl&order_by=rating&ldate=4&lang=zh-cn"
 
 # 运行循环从 page 12 到 20 (包含 20)
-run_scraper_and_save(start_page=12, end_page=20, base_url_template=BASE_URL_TEMPLATE)
+run_scraper_and_save(start_page=21, end_page=50, base_url_template=BASE_URL_TEMPLATE)
